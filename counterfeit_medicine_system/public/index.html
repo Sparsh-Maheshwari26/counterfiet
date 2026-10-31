@@ -1,0 +1,88 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MedVerify</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Manrope','sans-serif']},colors:{pri:'#1769AA',acc:'#1788D4',navy:'#16324F',slate2:'#526579',ice:'#F4F8FC',line:'#DFE8F1'}}}}</script>
+<style>.card{background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border:1px solid #DFE8F1;border-radius:18px;box-shadow:0 6px 24px rgba(23,105,170,.07)}
+.inp{width:100%;border:1px solid #DFE8F1;border-radius:12px;padding:.7rem .9rem;background:#fff;color:#16324F}.inp:focus{outline:2px solid #1788D4;border-color:#1788D4}
+.tab.on{background:#1769AA;color:#fff}.b-ok{background:#dcf5e5;color:#17753d}.b-warn{background:#fdf0cf;color:#8a5a00}.b-bad{background:#fde0e0;color:#a02525}.b-info{background:#e6eef7;color:#526579}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}</style></head>
+<body class="bg-ice font-sans text-navy">
+<header class="bg-white border-b border-line sticky top-0 z-10"><div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-3">
+<div class="font-extrabold text-xl text-pri mr-4">MedVerify</div>
+<nav id="nav" class="flex flex-wrap gap-1 text-sm font-semibold"></nav></div></header>
+<main class="max-w-6xl mx-auto px-4 py-8">
+
+<section id="home" class="view"><div class="card p-8 md:p-12"><h1 class="text-3xl md:text-5xl font-extrabold leading-tight max-w-2xl">Check a medicine's label details before you trust the pack.</h1>
+<p class="mt-4 text-slate2 max-w-xl">MedVerify compares what is printed on a medicine with a reference database and flags what looks inconsistent.</p>
+<button onclick="go('verify')" class="mt-6 bg-pri hover:bg-acc text-white font-bold px-6 py-3 rounded-xl">Verify a medicine</button></div>
+<div class="grid md:grid-cols-3 gap-4 mt-6">
+<div class="card p-5"><b>1. Enter label details</b><p class="text-sm text-slate2 mt-1">Brand, batch, dates, price and product code.</p></div>
+<div class="card p-5"><b>2. We screen them</b><p class="text-sm text-slate2 mt-1">Identity, dates, manufacturer and plausibility checks.</p></div>
+<div class="card p-5"><b>3. Read the findings</b><p class="text-sm text-slate2 mt-1">A 0–100 risk score with each reason listed.</p></div></div>
+<div class="card p-6 mt-6"><b>Our mission</b><p class="text-slate2 mt-1">Help people spot suspicious medicines early and send them to a pharmacist or the manufacturer for final confirmation.</p></div></section>
+
+<section id="verify" class="view hidden"><div class="card p-6 md:p-8"><div class="flex justify-between flex-wrap gap-2 mb-5"><h2 class="text-2xl font-extrabold">Verify medicine</h2>
+<button type="button" onclick="sample()" class="border border-line bg-white px-4 py-2 rounded-xl font-semibold text-pri">Load sample data</button></div>
+<div id="f" class="grid md:grid-cols-2 gap-4 text-sm font-semibold">
+<label>Brand name<input name="brand" class="inp mt-1" placeholder="e.g. Paracetamol 500"></label>
+<label>Active ingredient<input name="ingredient" class="inp mt-1"></label>
+<label>Dosage form<input name="dosage_form" class="inp mt-1" placeholder="TABLET"></label>
+<label>Batch number<input name="batch" class="inp mt-1"></label>
+<label>Manufacturing date<input type="date" name="mfg_date" class="inp mt-1"></label>
+<label>Expiry date<input type="date" name="expiry_date" class="inp mt-1"></label>
+<label>MRP (₹)<input type="number" step="0.01" name="mrp" class="inp mt-1"></label>
+<label>Product code (NDC)<input name="product_code" class="inp mt-1"></label>
+<label class="md:col-span-2">Manufacturer<input name="manufacturer" class="inp mt-1"></label></div>
+<button onclick="run()" class="mt-6 bg-pri hover:bg-acc text-white font-bold px-6 py-3 rounded-xl">Review medicine details</button></div>
+<div id="res" class="mt-6 hidden"></div></section>
+
+<section id="db" class="view hidden"><div class="card p-6"><h2 class="text-2xl font-extrabold mb-4">Database explorer</h2>
+<div class="flex flex-wrap gap-3 mb-4"><input id="q" class="inp max-w-sm" placeholder="Search name, ingredient, manufacturer">
+<select id="src" class="inp max-w-[11rem]"><option value="">All sources</option><option value="openfda">openFDA</option><option value="demo">Demo</option></select></div>
+<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-slate2"><tr><th class="py-2 pr-3">#</th><th class="pr-3">Name</th><th class="pr-3">Generic</th><th class="pr-3">Strength</th><th class="pr-3">Form</th><th class="pr-3">Manufacturer</th><th>Source</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="flex items-center gap-3 mt-4 text-sm"><button onclick="pg(-1)" class="border border-line px-3 py-1 rounded-lg">Previous</button><span id="pi"></span><button onclick="pg(1)" class="border border-line px-3 py-1 rounded-lg">Next</button></div></div></section>
+
+<section id="stats" class="view hidden"><div id="kpi" class="grid md:grid-cols-4 gap-4"></div>
+<div class="card p-6 mt-6"><h2 class="text-xl font-extrabold mb-3">Verification history</h2><div id="hs" class="text-sm"></div><p id="hn" class="text-xs text-slate2 mt-3"></p></div></section>
+
+<section id="about" class="view hidden"><div class="card p-6 md:p-8 space-y-3 max-w-3xl"><h2 class="text-2xl font-extrabold">About and safety</h2>
+<p class="text-slate2">Reference data: 500 openFDA NDC Directory listings plus 12 fictional demo rows. openFDA is US-focused and is not an Indian approval database.</p>
+<ul class="list-disc pl-5 text-slate2 space-y-1"><li>A match does not prove a physical pack is genuine.</li><li>No match does not mean a medicine is fake.</li><li>Batch numbers are not checked with manufacturers, and recalls are not checked.</li><li>Always confirm with a pharmacist or the manufacturer. In India, see CDSCO notices.</li></ul></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),T=[['home','Home'],['verify','Verify Medicine'],['db','Database Explorer'],['stats','Analytics and History'],['about','About and Safety']];
+$('#nav').innerHTML=T.map(t=>`<button data-t="${t[0]}" onclick="go('${t[0]}')" class="tab px-3 py-2 rounded-lg">${t[1]}</button>`).join('');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function go(t){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==t));
+document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+if(t==='db')load();if(t==='stats')stats();location.hash=t;window.scrollTo(0,0)}
+function sample(){const d={brand:'Paracetamol 500',ingredient:'Acetaminophen',dosage_form:'TABLET',batch:'B2417',mfg_date:'2025-01-10',expiry_date:'2027-01-09',mrp:32.5,product_code:'',manufacturer:''};
+for(const k in d)document.querySelector(`[name=${k}]`).value=d[k]}
+const B={ok:'b-ok',warn:'b-warn',bad:'b-bad',info:'b-info'},L={ok:'Pass',warn:'Check',bad:'Alert',info:'Note'};
+async function run(){const body={};document.querySelectorAll('#f input').forEach(i=>{if(i.value!=='')body[i.name]=i.type==='number'?+i.value:i.value});
+if(!body.brand&&!body.ingredient){alert('Enter a brand name or active ingredient.');return}
+const r=$('#res');r.classList.remove('hidden');r.innerHTML='<div class="card p-6"><p class="font-bold mb-3" id="st">Reading label details…</p><div class="h-2 bg-line rounded-full overflow-hidden"><div id="bar" class="h-2 bg-acc transition-all duration-500" style="width:0"></div></div></div>';
+const steps=['Reading label details…','Matching reference listings…','Comparing dates…','Scoring risk…'];let i=0;
+const tm=setInterval(()=>{i++;if(i<4){$('#st').textContent=steps[i];$('#bar').style.width=i*25+'%'}},450);
+setTimeout(()=>$('#bar').style.width='20%',30);
+try{const [d]=await Promise.all([fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>{if(!x.ok)throw 0;return x.json()}),new Promise(z=>setTimeout(z,1800))]);clearInterval(tm);
+const c={low:'#17753d',medium:'#8a5a00',high:'#a02525'}[d.level];
+r.innerHTML=`<div class="card p-6 md:p-8"><div class="flex items-center gap-6 flex-wrap"><div class="text-6xl font-extrabold" style="color:${c}">${d.score}</div><div><div class="text-xl font-extrabold">${d.outcome}</div><div class="text-sm text-slate2">Risk score out of 100. Higher means more inconsistencies.</div></div></div>
+<div class="mt-5 divide-y divide-line">${d.findings.map(f=>`<div class="py-3 flex gap-3 items-start"><span class="${B[f.status]} text-xs font-bold px-2 py-1 rounded-full w-16 text-center shrink-0">${L[f.status]}</span><div><b>${esc(f.check)}</b><div class="text-sm text-slate2">${esc(f.detail)}</div></div></div>`).join('')}</div>
+${d.references.length?`<p class="text-sm mt-4"><b>Closest reference:</b> ${esc(d.references[0].brand_name)}, ${esc(d.references[0].labeler_name)}</p>`:''}
+<div class="mt-5 b-info rounded-xl p-4 text-sm">${esc(d.limitations)}</div></div>`}
+catch(e){clearInterval(tm);r.innerHTML='<div class="card p-6 b-bad">Could not reach the verification service. Try again.</div>'}}
+let P=1,TOT=0,SZ=20,tt;
+async function load(){const u=`/api/medicines?q=${encodeURIComponent($('#q').value)}&source=${$('#src').value}&page=${P}&page_size=${SZ}`;
+const d=await fetch(u).then(r=>r.json());TOT=d.total;
+$('#tb').innerHTML=d.items.map((m,i)=>`<tr class="border-t border-line"><td class="py-2 pr-3 text-slate2">${d.offset+i+1}</td><td class="pr-3 font-semibold">${esc(m.brand_name)}</td><td class="pr-3">${esc(m.generic_name)}</td><td class="pr-3">${esc(m.strength)}</td><td class="pr-3">${esc(m.dosage_form)}</td><td class="pr-3">${esc(m.labeler_name)}</td><td>${esc(m.source_type)}</td></tr>`).join('')||'<tr><td colspan=7 class="py-6 text-slate2">No records match. Try a shorter search.</td></tr>';
+$('#pi').textContent=`Page ${P} of ${Math.max(1,Math.ceil(TOT/SZ))} · ${TOT} records`}
+function pg(n){const m=Math.max(1,Math.ceil(TOT/SZ));P=Math.min(m,Math.max(1,P+n));load()}
+$('#q').oninput=()=>{clearTimeout(tt);tt=setTimeout(()=>{P=1;load()},300)};$('#src').onchange=()=>{P=1;load()};
+async function stats(){const [s,h]=await Promise.all([fetch('/api/stats').then(r=>r.json()),fetch('/api/history').then(r=>r.json())]);
+$('#kpi').innerHTML=[['Reference records',s.total_records],['Scans this session',s.scans],['Flagged',s.flagged],['Real vs demo',(s.by_source.openfda||0)+' / '+(s.by_source.demo||0)]].map(k=>`<div class="card p-5"><div class="text-3xl font-extrabold text-pri">${k[1]}</div><div class="text-sm text-slate2">${k[0]}</div></div>`).join('');
+$('#hs').innerHTML=h.items.length?`<table class="w-full"><thead class="text-left text-slate2"><tr><th class="py-1">Time (UTC)</th><th>Medicine</th><th>Batch</th><th>Score</th><th>Outcome</th></tr></thead><tbody>${h.items.map(x=>`<tr class="border-t border-line"><td class="py-2">${esc(x.at)}</td><td>${esc(x.brand)}</td><td>${esc(x.batch)}</td><td>${x.score}</td><td>${esc(x.outcome)}</td></tr>`).join('')}</tbody></table>`:'No scans yet. Verify a medicine to start the log.';
+$('#hn').textContent=h.note}
+go((location.hash||'#home').slice(1).replace(/[^a-z]/g,'')||'home');
+</script></body></html>

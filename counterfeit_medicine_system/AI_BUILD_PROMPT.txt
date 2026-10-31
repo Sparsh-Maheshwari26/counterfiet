@@ -1,0 +1,34 @@
+Build and improve the provided web application named “Counterfeit Medicine System”. Main stack: Python, FastAPI, SQLite and a Tailwind CSS single-page frontend, deployed on Vercel. Keep the current file layout unless a change is needed.
+
+DESIGN
+- Create a polished, premium healthcare dashboard inspired by modern Dribbble-style SaaS interfaces, without copying a specific designer's work.
+- Use a clean white and very pale blue background, layered blue gradients, navy typography, cyan accents, soft shadows, rounded cards, subtle micro-interactions, and a responsive layout.
+- Use the included shield-and-capsule logo. Keep the exact project title “Counterfeit Medicine System”.
+- Provide interactive page navigation for Overview, Verify Medicine, Medicine Database, and How It Works. Make page transitions and buttons work, not decorative only.
+- Add clear field labels, help text, input validation, loading and error states, empty states, and mobile-friendly layouts.
+
+FUNCTIONAL REQUIREMENTS
+- Ask for the medicine name, batch/lot number, manufacturing date, expiry date, manufacturer/marketer, manufacturing country or location, and an optional barcode or product code.
+- Search a local SQLite product-reference database by brand/product name, generic name, active ingredients, labeler/manufacturer, and product code.
+- Add date consistency checks, database searching, filters, and CSV export.
+- Add a working sync flow to fetch at least 500 unique product listings from a real, documented, public or officially licensed medicine reference source. Save records locally. Do not invent records or claim source verification beyond what the provider states.
+- Keep real source records separate from fictional demo/test rows. Label demo rows visibly and never use them to make a real-world authenticity claim.
+- Preserve source name, source URL, sync date, product code and relevant product fields with every imported record.
+- Add graceful error handling for network timeouts, rate limits, malformed responses, duplicate product IDs and partial sync failures.
+- Keep existing data intact if a sync fails. Include a terminal sync script and clear Windows setup instructions.
+
+SAFETY AND DATA ACCURACY
+- Never label a package “genuine” only because its product name or code matches a registry.
+- Explain that product-level reference listings do not verify the unique batch/lot, expiry printed on a specific physical pack, seal, hologram or contents.
+- Show cautious results such as “Reference found, batch unverified”, “No reference match”, “Demo match only”, or “Date warning”. Explain that no match is not proof of counterfeiting.
+- The openFDA NDC Directory is US-focused and contains labeler-submitted listings. Keep this limitation visible. Do not present US data as Indian CDSCO approval data.
+- For an India-specific deployment, use an appropriate CDSCO source and a manufacturer-authorized batch/serialization API. Do not invent an API or scrape against site terms.
+- Escape user-controlled values before rendering HTML. Avoid leaking batch numbers to external APIs or logs.
+- Add a README with source citations, setup instructions, architecture, known limitations and the requirements for production deployment.
+
+QUALITY CHECKS
+- Verify Python syntax and imports.
+- Test first run with demo rows and no internet.
+- Test successful database sync, sync failure, duplicate records, empty searches, no match, expired dates, date-order errors, manufacturer mismatch, and demo-only match.
+- Make sure all visible buttons and navigation controls work.
+- Provide a concise list of changed files and exact commands to run the project on Windows.
